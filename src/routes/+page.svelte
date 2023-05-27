@@ -1,7 +1,36 @@
-<form method="POST">
+<script lang="ts">
+  import { enhance } from '$app/forms';
+  import type { ActionData } from './$types';
+
+  export let form: ActionData;
+  // todo: placeholder flashes for a frame after receiving result
+  let placeholder = '';
+  $: placeholder = form?.query ? form.query : '';
+
+  let awaiting = false;
+</script>
+
+<form
+  method="POST"
+  use:enhance={({ formData, cancel }) => {
+    if (formData.get('query') === '') {
+      cancel();
+    }
+    awaiting = true;
+    return async ({ update }) => {
+      awaiting = false;
+      update();
+    };
+  }}
+>
   <label>
     Query
-    <input name="query" type="text" />
+    <input
+      name="query"
+      type="text"
+      placeholder={placeholder}
+      disabled={awaiting}
+    />
   </label>
 </form>
 
