@@ -7,6 +7,11 @@
   let placeholder = '';
   $: placeholder = form?.query ? form.query : '';
 
+  $: if (form && 'result' in form) {
+    console.log('result:', form.result);
+    console.log('query:', form.query);
+  }
+
   let awaiting = false;
 </script>
 

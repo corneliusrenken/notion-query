@@ -1,6 +1,6 @@
 import { isFullBlock } from '@notionhq/client';
 import type { BlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import notion from '../notion';
+import notion from '.';
 
 export default async function getBlocks(parentId: string) {
   const response = await notion.blocks.children.list({

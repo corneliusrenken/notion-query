@@ -4,7 +4,7 @@ import formatPage from './formatPage';
 import getBlocks from './getBlocks';
 import getPage from './getPage';
 
-export default async function getCompletePageContent(
+export default async function getPageContent(
   pageId: string,
 ) {
   const [formattedPage, formattedBlocks] = await Promise.all([
@@ -21,13 +21,10 @@ export default async function getCompletePageContent(
     })(),
   ]);
 
-  const childPages: { id: string, title: string }[] = [];
   const content: string[] = [];
 
   formattedBlocks.forEach((formattedBlock) => {
-    if (formattedBlock.type === 'child_page') {
-      childPages.push({ id: formattedBlock.id, title: formattedBlock.childPageTitle });
-    } else if ('content' in formattedBlock) {
+    if ('content' in formattedBlock) {
       content.push(...formattedBlock.content);
     }
   });
@@ -36,6 +33,5 @@ export default async function getCompletePageContent(
     id: pageId,
     title: formattedPage.title,
     content,
-    childPages,
   };
 }
