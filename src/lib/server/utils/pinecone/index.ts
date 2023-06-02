@@ -9,3 +9,5 @@ await pinecone.init({
 });
 
 export default pinecone;
+
+export const indexName = 'test-index';

@@ -7,6 +7,7 @@ import getPage from './getPage';
 export default async function getPageContent(
   pageId: string,
 ) {
+  // todo: broke when having a database and table pages
   const [formattedPage, formattedBlocks] = await Promise.all([
     (async () => {
       const page = await getPage(pageId);
