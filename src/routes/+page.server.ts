@@ -8,7 +8,7 @@ export const actions = {
     const query = z.string().parse(formData.get('query'));
 
     const {
-      response,
+      answers,
       finalPrompt,
       userQuery,
       vectorQuery,
@@ -16,11 +16,11 @@ export const actions = {
     } = await getContextualResponse(query, 5);
 
     return {
-      response,
+      answers,
       finalPrompt,
       userQuery,
       vectorQuery,
-      pages: pages.map(({ id, title }) => ({ id, title })),
+      pages: pages.map(({ id, title, score }) => ({ id, title, score })),
     };
   },
 } satisfies Actions;
