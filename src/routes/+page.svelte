@@ -18,7 +18,7 @@
   <form
     method="POST"
     use:enhance={({ formData, cancel }) => {
-      if (formData.get('query') === '') {
+      if (formData.get('query') === '' || awaiting) {
         cancel();
       }
       awaiting = true;
@@ -36,14 +36,24 @@
         placeholder={placeholder}
         disabled={awaiting}
       />
-      <!-- <input
+    </label>
+    <label>
+      Reference Page Count
+      <input
         name="pageCount"
         type="number"
         value="5"
         min="1"
         max="10"
         disabled={awaiting}
-      />  -->
+      />
+    </label>
+    <label>
+      <input
+        type="submit"
+        value="Submit"
+        disabled={awaiting}
+      />
     </label>
   </form>
   {#if (form)}
@@ -92,8 +102,14 @@
     align-items: center;
   }
 
-  label {
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     width: 50vw;
+  }
+
+  label {
     display: flex;
     gap: 1rem;
   }
@@ -102,8 +118,8 @@
     flex: 1;
   }
 
-  /* input[type='number'] {
+  input[type='number'] {
     width: 2rem;
     flex: none;
-  } */
+  }
 </style>
