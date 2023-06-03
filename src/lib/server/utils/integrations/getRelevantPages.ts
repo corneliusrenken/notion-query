@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import createEmbedding from '../openai/createEmbedding';
 import getIndex from '../pinecone/getIndex';
+import getGpt4Completion from '../openai/getGpt4Completion';
+import getQueryEnhancementPrompt from '../prompts/getQueryEnhancementPrompt';
 
 const metadataSchema = z.object({
   title: z.string(),
@@ -10,7 +12,9 @@ const metadataSchema = z.object({
 export default async function getRelevantPages(query: string, pageCount = 3) {
   const index = await getIndex();
 
-  const embedding = await createEmbedding(query);
+  const modifiedQuery = await getGpt4Completion(getQueryEnhancementPrompt(query));
+
+  const embedding = await createEmbedding(modifiedQuery);
 
   const response = await index.query({
     queryRequest: {
@@ -22,13 +26,19 @@ export default async function getRelevantPages(query: string, pageCount = 3) {
 
   if (response.matches === undefined) throw new Error('No matches found');
 
-  return response.matches.map((match) => {
-    const { id, metadata } = match;
-    const { title, content } = metadataSchema.parse(metadata);
-    return {
-      id,
-      title,
-      content,
-    };
-  });
+  return {
+    // todo: returning modified query for development
+    userQuery: query,
+    vectorQuery: modifiedQuery,
+    pages: response.matches.map((match) => {
+      const { id, metadata, score } = match;
+      const { title, content } = metadataSchema.parse(metadata);
+      return {
+        id,
+        score,
+        title,
+        content,
+      };
+    }),
+  };
 }
