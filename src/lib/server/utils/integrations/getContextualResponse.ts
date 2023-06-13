@@ -8,6 +8,7 @@ const answerSchema = z.object({
   references: z.array(z.object({
     id: z.string(),
     title: z.string(),
+    url: z.string(),
   })),
 });
 

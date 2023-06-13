@@ -8,7 +8,7 @@ import getIndex from '../pinecone/getIndex';
  */
 export default async function indexPage(pageId: string) {
   const pineconeIndex = await getIndex();
-  const { title, content } = await getPageContent(pageId);
+  const { title, url, content } = await getPageContent(pageId);
 
   if (content.length === 0) {
     console.log(`No content - Skipping indexing of page ${pageId}`);
@@ -31,6 +31,7 @@ export default async function indexPage(pageId: string) {
     metadata: {
       title,
       content,
+      url,
       // todo: add last changed here to update indices?
     },
   };

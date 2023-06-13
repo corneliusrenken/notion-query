@@ -12,7 +12,7 @@ export default async function getPageContent(
     (async () => {
       const page = await getPage(pageId);
       if (!isFullPage(page)) throw new Error('page is not full page');
-      return formatPage(page, { title: true });
+      return formatPage(page, { title: true, url: true });
     })(),
     (async () => {
       const blocks = await getBlocks(pageId);
@@ -33,6 +33,7 @@ export default async function getPageContent(
   return {
     id: pageId,
     title: formattedPage.title,
+    url: formattedPage.url,
     content,
   };
 }

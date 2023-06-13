@@ -7,8 +7,8 @@
 <div class="answer">
   <div class="font-main">{answer.answer}</div>
   <div class="references">
-    {#each answer.references as { title }, index}
-      <a class="font-link" href={'/temp'} target="_blank">{title}</a>
+    {#each answer.references as { title, url }, index}
+      <a class="font-link" href={url} target="_blank">{title}</a>
       {#if index !== answer.references.length - 1}
         <div class="font-link separator">&nbsp;</div>
       {/if}

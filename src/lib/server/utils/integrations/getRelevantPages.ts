@@ -6,6 +6,7 @@ import getQueryEnhancementPrompt from '../prompts/getQueryEnhancementPrompt';
 
 const metadataSchema = z.object({
   title: z.string(),
+  url: z.string(),
   content: z.array(z.string()),
 });
 
@@ -32,11 +33,12 @@ export default async function getRelevantPages(query: string, pageCount = 3) {
     vectorQuery: modifiedQuery,
     pages: response.matches.map((match) => {
       const { id, metadata, score } = match;
-      const { title, content } = metadataSchema.parse(metadata);
+      const { title, url, content } = metadataSchema.parse(metadata);
       return {
         id,
         score,
         title,
+        url,
         content,
       };
     }),
