@@ -1,0 +1,14 @@
+:root {
+  --app-width: 600px;
+
+  --margin-horiz-app: max((100vw - var(--app-width)) / 2, 5vw);
+  /* todo: this vertical header should keep the app centered if the screen is super high */
+  --margin-vert-header: 100px;
+
+  --spacing-horiz-main: 16px;
+  --spacing-vert-main: 36px;
+  --spacing-vert-small: 6px;
+
+  --line-height-main: 17px;
+  --line-height-link: 15px;
+}

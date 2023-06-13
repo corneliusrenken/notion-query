@@ -11,7 +11,7 @@ const answerSchema = z.object({
   })),
 });
 
-type Answer = z.infer<typeof answerSchema>;
+export type Answer = z.infer<typeof answerSchema>;
 
 /**
  * @param referenceCount how many notion pages should be used to form the context

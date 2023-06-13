@@ -1,0 +1,22 @@
+:root {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-main {
+  font-size: 14px;
+  color: var(--font-main);
+  line-height: var(--line-height-main);
+}
+
+.font-link {
+  font-size: 12px;
+  color: var(--font-secondary);
+  text-decoration: underline;
+  line-height: var(--line-height-link);
+}
+
+.font-link:hover {
+  text-decoration: none;
+}

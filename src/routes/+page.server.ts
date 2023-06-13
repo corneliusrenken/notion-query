@@ -6,7 +6,7 @@ export const actions = {
   default: async ({ request }) => {
     const formData = await request.formData();
     const query = z.string().parse(formData.get('query'));
-    const pageCount = z.number().parse(Number(formData.get('pageCount')));
+    // const pageCount = z.number().parse(Number(formData.get('pageCount')));
 
     const {
       answers,
@@ -14,7 +14,7 @@ export const actions = {
       userQuery,
       vectorQuery,
       pages,
-    } = await getContextualResponse(query, pageCount);
+    } = await getContextualResponse(query, 5);
 
     return {
       answers,

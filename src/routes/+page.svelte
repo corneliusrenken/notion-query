@@ -1,73 +1,22 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
+  import Answer from '$lib/components/Answer.svelte';
+  import QueryInput from '$lib/components/QueryInput.svelte';
   import type { ActionData } from './$types';
 
   export let form: ActionData;
-  // todo: placeholder flashes for a frame after receiving result
-  let placeholder = '';
-  $: placeholder = form?.userQuery ? form.userQuery : '';
-
-  $: if (form) {
-    console.log('form:', form);
-  }
-
-  let awaiting = false;
 </script>
 
-<div>
-  <form
-    method="POST"
-    use:enhance={({ formData, cancel }) => {
-      if (formData.get('query') === '' || awaiting) {
-        cancel();
-      }
-      awaiting = true;
-      return async ({ update }) => {
-        awaiting = false;
-        update();
-      };
-    }}
-  >
-    <label>
-      Query
-      <input
-        name="query"
-        type="text"
-        placeholder={placeholder}
-        disabled={awaiting}
-      />
-    </label>
-    <label>
-      Reference Page Count
-      <input
-        name="pageCount"
-        type="number"
-        value="5"
-        min="1"
-        max="10"
-        disabled={awaiting}
-      />
-    </label>
-    <label>
-      <input
-        type="submit"
-        value="Submit"
-        disabled={awaiting}
-      />
-    </label>
-  </form>
+<div class="container">
+  <QueryInput
+    placeholder={form?.userQuery || ''}
+  />
   {#if (form)}
-    <h3>
-      Responses:
-    </h3>
-    <ul>
-      {#each form.answers as { answer, references }}
-        <li>
-          {answer} ({references.map(({ title }) => title).join(', ')})
-        </li>
+    <div>
+      {#each form.answers as answer}
+        <Answer answer={answer} />
       {/each}
-    </ul>
-    <h4>
+    </div>
+    <!-- <h4>
       Pages used as context:
     </h4>
     <ul>
@@ -88,38 +37,13 @@
     </h4>
     <code>
       {form.finalPrompt}
-    </code>
+    </code> -->
   {/if}
 </div>
 
 <style>
-  :global(body) {
-    margin: 0;
-    padding: 10vh 25vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 50vw;
-  }
-
-  label {
-    display: flex;
-    gap: 1rem;
-  }
-
-  input {
-    flex: 1;
-  }
-
-  input[type='number'] {
-    width: 2rem;
-    flex: none;
+  .container {
+    width: var(--app-width);
+    margin: 0 var(--margin-horiz-app);
   }
 </style>
