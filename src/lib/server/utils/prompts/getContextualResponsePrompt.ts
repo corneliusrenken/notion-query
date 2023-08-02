@@ -1,9 +1,8 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable max-len */
 
+import type UnwrapPromise from '$lib/utils/UnwrapPromise';
 import type getRelevantPages from '../integrations/getRelevantPages';
-
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
 export default function getContextualResponsePrompt(
   query: string,

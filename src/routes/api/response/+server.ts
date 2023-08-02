@@ -1,8 +1,7 @@
 import { error } from '@sveltejs/kit';
 import getContextualResponse from '$lib/server/utils/integrations/getContextualResponse';
 import type { RequestHandler } from './$types';
-
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+import type UnwrapPromise from '$lib/utils/UnwrapPromise';
 
 export type StreamEvent = {
   type: 'status',

@@ -1,11 +1,11 @@
 <script lang="ts">
   import Answer from '$lib/components/Answer.svelte';
   import QueryInput from '$lib/components/QueryInput.svelte';
-    import QueryStatus from '$lib/components/QueryStatus.svelte';
+  import QueryStatus from '$lib/components/QueryStatus.svelte';
   import type getContextualResponse from '$lib/server/utils/integrations/getContextualResponse';
+  import type UnwrapPromise from '$lib/utils/UnwrapPromise';
   import type { StreamEvent } from './api/response/+server';
 
-  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
   type ResponseType = UnwrapPromise<ReturnType<typeof getContextualResponse>>;
 
   let data: ResponseType | null = null;
@@ -38,9 +38,7 @@
 
 <div class="container">
   <QueryStatus status={status} />
-  <QueryInput
-    runQuery={runQuery}
-  />
+  <QueryInput runQuery={runQuery} />
   {#if (data)}
     <div>
       {#each data.answers as answer}
