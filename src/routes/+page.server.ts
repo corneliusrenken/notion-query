@@ -6,7 +6,11 @@ export const actions = {
   default: async ({ request }) => {
     const formData = await request.formData();
     const query = z.string().parse(formData.get('query'));
-    // const pageCount = z.number().parse(Number(formData.get('pageCount')));
+
+    // to reindex all pages:
+    // await createIndex(); (only do this if pinecone deleted the index)
+    // await deleteAllIndices();
+    // await indexAllPages();
 
     const {
       answers,
