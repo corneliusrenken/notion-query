@@ -2,6 +2,7 @@ import { z } from 'zod';
 import getGpt4Completion from '../openai/getGpt4Completion';
 import getContextualResponsePrompt from '../prompts/getContextualResponsePrompt';
 import getRelevantPages from './getRelevantPages';
+import type { StreamEvent } from '../../../../routes/api/response/+server';
 
 const answerSchema = z.object({
   answer: z.string(),
@@ -17,11 +18,16 @@ export type Answer = z.infer<typeof answerSchema>;
 /**
  * @param referenceCount how many notion pages should be used to form the context
  */
-export default async function getContextualResponse(query: string, referenceCount: number) {
-  const { userQuery, vectorQuery, pages } = await getRelevantPages(query, referenceCount);
+export default async function getContextualResponse(
+  query: string,
+  referenceCount: number,
+  emit?: (event: StreamEvent) => void,
+) {
+  const { userQuery, vectorQuery, pages } = await getRelevantPages(query, referenceCount, emit);
 
   const prompt = getContextualResponsePrompt(userQuery, pages);
 
+  if (emit) emit({ type: 'status', status: 'Getting contextual answer' });
   const response = await getGpt4Completion(prompt);
   let answers: Answer[];
 

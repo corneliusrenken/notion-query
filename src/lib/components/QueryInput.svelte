@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { enhance } from '$app/forms';
   import AnimatedBorder from './AnimatedBorder.svelte';
   import Icon from './Icon.svelte';
 
-  export let placeholder = '';
-  export let querying = false;
+  export let runQuery: (query: string) => Promise<void>;
 
+  let querying = false;
+  let placeholder = '';
+  let query = '';
   let form: HTMLFormElement;
   let shakeTimeout: ReturnType<typeof setTimeout>;
 
@@ -31,19 +32,24 @@
     query-bar
     ${querying ? 'disabled' : ''}
   `}
-  method="POST"
-  use:enhance={({ formData, cancel }) => {
-    if (formData.get('query') === '' || querying) {
+  on:submit={async (e) => {
+    if (query === '' || querying) {
+      e.preventDefault();
       shake();
-      cancel();
-      return undefined;
+      return;
     }
 
+    placeholder = query;
     querying = true;
-    return async ({ update }) => {
+
+    try {
+      await runQuery(query);
+    } catch (err) {
+      console.error(err);
+    } finally {
       querying = false;
-      update();
-    };
+      query = '';
+    }
   }}
 >
   {#if querying}
@@ -56,6 +62,7 @@
     disabled={querying}
     name="query"
     type="text"
+    bind:value={query}
   />
 </form>
 

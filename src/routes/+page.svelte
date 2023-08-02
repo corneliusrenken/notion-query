@@ -1,18 +1,47 @@
 <script lang="ts">
   import Answer from '$lib/components/Answer.svelte';
   import QueryInput from '$lib/components/QueryInput.svelte';
-  import type { ActionData } from './$types';
+  import QueryStatus from '$lib/components/QueryStatus.svelte';
+  import type getContextualResponse from '$lib/server/utils/integrations/getContextualResponse';
+  import type UnwrapPromise from '$lib/utils/UnwrapPromise';
+  import type { StreamEvent } from './api/response/+server';
 
-  export let form: ActionData;
+  type ResponseType = UnwrapPromise<ReturnType<typeof getContextualResponse>>;
+
+  let data: ResponseType | null = null;
+  let status = '';
+
+  const runQuery = async (query: string) => {
+    await new Promise<void>((resolve) => {
+      const eventSource = new EventSource(`/api/response?query=${query}`);
+
+      eventSource.onmessage = (e) => {
+        const foo = JSON.parse(e.data) as StreamEvent;
+        if (foo.type === 'status') {
+          status = foo.status;
+        } else {
+          status = '';
+          data = foo.response;
+          eventSource.close();
+          resolve();
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        resolve();
+        throw new Error('EventSource failed.');
+      };
+    });
+  };
 </script>
 
 <div class="container">
-  <QueryInput
-    placeholder={form?.userQuery || ''}
-  />
-  {#if (form)}
+  <QueryStatus status={status} />
+  <QueryInput runQuery={runQuery} />
+  {#if (data)}
     <div>
-      {#each form.answers as answer}
+      {#each data.answers as answer}
         <Answer answer={answer} />
       {/each}
     </div>
