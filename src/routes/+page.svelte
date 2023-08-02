@@ -1,18 +1,26 @@
 <script lang="ts">
   import Answer from '$lib/components/Answer.svelte';
   import QueryInput from '$lib/components/QueryInput.svelte';
-  import type { ActionData } from './$types';
+  import type getContextualResponse from '$lib/server/utils/integrations/getContextualResponse';
 
-  export let form: ActionData;
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+  type ResponseType = UnwrapPromise<ReturnType<typeof getContextualResponse>>;
+
+  let data: ResponseType | null = null;
 </script>
 
 <div class="container">
   <QueryInput
-    placeholder={form?.userQuery || ''}
+    runQuery={async (query) => {
+      const res = await fetch(`/api/response?query=${query}`);
+      const json = await res.json();
+      console.log('data:\n', json);
+      data = json;
+    }}
   />
-  {#if (form)}
+  {#if (data)}
     <div>
-      {#each form.answers as answer}
+      {#each data.answers as answer}
         <Answer answer={answer} />
       {/each}
     </div>
