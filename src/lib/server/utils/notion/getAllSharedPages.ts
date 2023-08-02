@@ -1,6 +1,6 @@
 import { isFullPage } from '@notionhq/client';
 import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import notion from '../notion';
+import notion from '.';
 
 export default async function getAllSharedPages() {
   const response = await notion.search({

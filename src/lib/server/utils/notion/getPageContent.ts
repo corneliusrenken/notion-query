@@ -4,14 +4,15 @@ import formatPage from './formatPage';
 import getBlocks from './getBlocks';
 import getPage from './getPage';
 
-export default async function getCompletePageContent(
+export default async function getPageContent(
   pageId: string,
 ) {
+  // todo: broke when having a database and table pages
   const [formattedPage, formattedBlocks] = await Promise.all([
     (async () => {
       const page = await getPage(pageId);
       if (!isFullPage(page)) throw new Error('page is not full page');
-      return formatPage(page, { title: true });
+      return formatPage(page, { title: true, url: true });
     })(),
     (async () => {
       const blocks = await getBlocks(pageId);
@@ -21,13 +22,10 @@ export default async function getCompletePageContent(
     })(),
   ]);
 
-  const childPages: { id: string, title: string }[] = [];
   const content: string[] = [];
 
   formattedBlocks.forEach((formattedBlock) => {
-    if (formattedBlock.type === 'child_page') {
-      childPages.push({ id: formattedBlock.id, title: formattedBlock.childPageTitle });
-    } else if ('content' in formattedBlock) {
+    if ('content' in formattedBlock) {
       content.push(...formattedBlock.content);
     }
   });
@@ -35,7 +33,7 @@ export default async function getCompletePageContent(
   return {
     id: pageId,
     title: formattedPage.title,
+    url: formattedPage.url,
     content,
-    childPages,
   };
 }
