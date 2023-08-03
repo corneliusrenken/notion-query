@@ -11,6 +11,8 @@
   let data: ResponseType | null = null;
   let status = '';
 
+  let shake: () => void;
+
   const runQuery = async (query: string) => {
     await new Promise<void>((resolve) => {
       const eventSource = new EventSource(`/api/response?query=${query}`);
@@ -22,6 +24,11 @@
         } else {
           status = '';
           data = foo.response;
+
+          if (data.answers.length === 0) {
+            shake();
+          }
+
           eventSource.close();
           resolve();
         }
@@ -38,8 +45,11 @@
 
 <div class="container">
   <QueryStatus status={status} />
-  <QueryInput runQuery={runQuery} />
-  {#if (data)}
+  <QueryInput runQuery={runQuery} bind:shake={shake} />
+  {#if data}
+    {#if data.answers.length === 0}
+      <Answer answer={{ answer: 'Unable to generate any relevant answers', references: [] }} style="font-style:italic;" />
+    {/if}
     <div>
       {#each data.answers as answer}
         <Answer answer={answer} />

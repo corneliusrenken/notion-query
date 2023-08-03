@@ -10,7 +10,7 @@
   let form: HTMLFormElement;
   let shakeTimeout: ReturnType<typeof setTimeout>;
 
-  function shake() {
+  export const shake = () => {
     if (shakeTimeout) clearTimeout(shakeTimeout);
 
     if (!form) return;
@@ -23,7 +23,7 @@
     shakeTimeout = setTimeout(() => {
       form.style.animation = '';
     }, duration);
-  }
+  };
 </script>
 
 <form

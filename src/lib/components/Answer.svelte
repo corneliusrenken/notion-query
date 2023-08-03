@@ -2,9 +2,10 @@
   import type { Answer } from '$lib/server/utils/integrations/getContextualResponse';
 
   export let answer: Answer;
+  export let style = '';
 </script>
 
-<div class="answer">
+<div class="answer" style={style}>
   <div class="font-main">{answer.answer}</div>
   <div class="references">
     {#each answer.references as { title, url }, index}
