@@ -3,6 +3,8 @@ import getGpt4Completion from '../openai/getGpt4Completion';
 import getContextualResponsePrompt from '../prompts/getContextualResponsePrompt';
 import getRelevantPages from './getRelevantPages';
 import type { StreamEvent } from '../../../../routes/api/response/+server';
+import calculateTokens from '../openai/calculateTokens';
+import paginatePages from './paginatePages';
 
 const answerSchema = z.object({
   answer: z.string(),
@@ -15,34 +17,61 @@ const answerSchema = z.object({
 
 export type Answer = z.infer<typeof answerSchema>;
 
+const emptyPromptTokenLength = calculateTokens(getContextualResponsePrompt('', ''), 0.2);
+
 /**
  * @param referenceCount how many notion pages should be used to form the context
  */
 export default async function getContextualResponse(
   query: string,
   referenceCount: number,
-  emit?: (event: StreamEvent) => void,
+  emit: (event: StreamEvent) => void,
 ) {
   const { userQuery, vectorQuery, pages } = await getRelevantPages(query, referenceCount, emit);
 
-  const prompt = getContextualResponsePrompt(userQuery, pages);
+  const tokensReservedForAnswers = 1000;
+  const queryTokenLength = calculateTokens(userQuery, 0.2);
+  // gpt-4 has a 8,192 token limit
+  const tokenSpaceForPages = (
+    8192 - emptyPromptTokenLength - queryTokenLength - tokensReservedForAnswers
+  );
 
-  if (emit) emit({ type: 'status', status: 'Getting contextual answer' });
-  const response = await getGpt4Completion(prompt);
-  let answers: Answer[];
+  const pageSnippets = paginatePages(pages, tokenSpaceForPages);
 
-  try {
-    answers = z.array(answerSchema).parse(JSON.parse(response));
-  } catch {
-    throw new Error('Answers from OpenAI API are not valid JSON');
-  }
+  const prompts = pageSnippets.map((page) => getContextualResponsePrompt(userQuery, page));
 
-  // returning all this for development
-  return {
-    answers,
-    finalPrompt: prompt,
-    userQuery,
-    vectorQuery,
-    pages,
-  };
+  if (prompts.length > 5) throw new Error('Too many prompts');
+
+  const statusAppend = prompts.length > 1 ? `s (1/${prompts.length})` : '';
+  emit({ type: 'status', status: `Getting contextual response${statusAppend}` });
+  let completedPrompts = 0;
+
+  prompts.forEach(async (prompt) => {
+    const response = await getGpt4Completion(prompt);
+
+    let answers: Answer[];
+    try {
+      answers = z.array(answerSchema).parse(JSON.parse(response));
+    } catch {
+      throw new Error('Answers from OpenAI API are not valid JSON');
+    }
+
+    completedPrompts += 1;
+
+    emit({
+      type: 'response',
+      final: completedPrompts === prompts.length,
+      response: {
+        answers,
+        finalPrompt: prompt,
+        userQuery,
+        vectorQuery,
+        pages,
+      },
+    });
+
+    if (completedPrompts !== prompts.length) {
+      emit({ type: 'status', status: `Getting contextual responses (${completedPrompts + 1}/${prompts.length})` });
+    }
+  });
 }

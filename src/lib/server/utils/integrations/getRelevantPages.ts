@@ -6,9 +6,10 @@ import getQueryEnhancementPrompt from '../prompts/getQueryEnhancementPrompt';
 import type { StreamEvent } from '../../../../routes/api/response/+server';
 
 const metadataSchema = z.object({
+  pageId: z.string(),
   title: z.string(),
   url: z.string(),
-  content: z.array(z.string()),
+  content: z.string(),
 });
 
 export default async function getRelevantPages(
@@ -41,10 +42,15 @@ export default async function getRelevantPages(
     userQuery: query,
     vectorQuery: modifiedQuery,
     pages: response.matches.map((match) => {
-      const { id, metadata, score } = match;
-      const { title, url, content } = metadataSchema.parse(metadata);
+      const { metadata, score } = match;
+      const {
+        pageId,
+        title,
+        url,
+        content,
+      } = metadataSchema.parse(metadata);
       return {
-        id,
+        id: pageId,
         score,
         title,
         url,

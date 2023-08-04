@@ -1,22 +1,42 @@
 import { error } from '@sveltejs/kit';
-import getContextualResponse from '$lib/server/utils/integrations/getContextualResponse';
+import getContextualResponse, { type Answer } from '$lib/server/utils/integrations/getContextualResponse';
 import type { RequestHandler } from './$types';
 import type UnwrapPromise from '$lib/utils/UnwrapPromise';
+import type getRelevantPages from '$lib/server/utils/integrations/getRelevantPages';
+import createIndex from '$lib/server/utils/pinecone/createIndex';
+import deleteAllIndices from '$lib/server/utils/pinecone/deleteAllIndices';
+import indexAllPages from '$lib/server/utils/integrations/indexAllPages';
 
 export type StreamEvent = {
   type: 'status',
   status: string,
 } | {
   type: 'response',
-  response: UnwrapPromise<ReturnType<typeof getContextualResponse>>,
+  response: {
+    answers: Answer[],
+    pages: UnwrapPromise<ReturnType<typeof getRelevantPages>>['pages'],
+    finalPrompt: string,
+    userQuery: string,
+    vectorQuery: string,
+  },
+  final: boolean,
 };
 
-export const GET = (async ({ url }) => {
-  // to reindex all pages:
-  // await createIndex(); // (only do this if pinecone deleted the index)
-  // await deleteAllIndices();
-  // await indexAllPages();
+async function reindexAllPages(
+  emit: (event: StreamEvent) => void,
+  createDatabaseIndex = false,
+) {
+  if (createDatabaseIndex) {
+    emit({ type: 'status', status: 'Reindexing Pages' });
+    await createIndex(); // (only do this if pinecone deleted the index)
+  }
+  emit({ type: 'status', status: 'Deleting old indices' });
+  await deleteAllIndices();
+  emit({ type: 'status', status: 'Indexing all pages' });
+  await indexAllPages();
+}
 
+export const GET = (async ({ url }) => {
   const query = url.searchParams.get('query');
 
   if (!query) throw error(400, 'Missing Query Parameter');
@@ -25,11 +45,13 @@ export const GET = (async ({ url }) => {
     async start(controller) {
       const emit = (event: StreamEvent) => {
         controller.enqueue(`data: ${JSON.stringify(event)}\n\n`);
-        if (event.type === 'response') controller.close();
+        if (event.type === 'response' && event.final) controller.close();
       };
 
-      const response = await getContextualResponse(query, 5, emit);
-      emit({ type: 'response', response });
+      // await reindexAllPages(emit);
+
+      // function below emits the final response
+      await getContextualResponse(query, 5, emit);
     },
   });
 
