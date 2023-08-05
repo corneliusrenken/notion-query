@@ -22,13 +22,16 @@ export type StreamEvent = {
   final: boolean,
 };
 
+/**
+ * @param createDatabaseIndex should only be true if this has never been run before (your Pinecone project doesn't have an index). For future times when you only want to reindex all pages, set this to false.
+ */
 async function reindexAllPages(
   emit: (event: StreamEvent) => void,
-  createDatabaseIndex = false,
+  createDatabaseIndex: boolean,
 ) {
   if (createDatabaseIndex) {
-    emit({ type: 'status', status: 'Reindexing Pages' });
-    await createIndex(); // (only do this if pinecone deleted the index)
+    emit({ type: 'status', status: 'Creating Pinecone Index' });
+    await createIndex();
   }
   emit({ type: 'status', status: 'Deleting old indices' });
   await deleteAllIndices();
@@ -48,7 +51,7 @@ export const GET = (async ({ url }) => {
         if (event.type === 'response' && event.final) controller.close();
       };
 
-      // await reindexAllPages(emit);
+      // await reindexAllPages(emit, true);
 
       // function below emits the final response
       await getContextualResponse(query, 5, emit);
