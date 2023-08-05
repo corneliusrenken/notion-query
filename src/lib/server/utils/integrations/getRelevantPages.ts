@@ -26,7 +26,7 @@ export default async function getRelevantPages(
   emit?.({ type: 'status', status: 'Creating Vector' });
   const embedding = await createEmbedding(modifiedQuery);
 
-  emit?.({ type: 'status', status: 'Fetching Pelevant Pages' });
+  emit?.({ type: 'status', status: 'Fetching Relevant Pages' });
   const response = await index.query({
     queryRequest: {
       vector: embedding,
@@ -43,19 +43,23 @@ export default async function getRelevantPages(
     vectorQuery: modifiedQuery,
     pages: response.matches.map((match) => {
       const { metadata, score } = match;
-      const {
-        pageId,
-        title,
-        url,
-        content,
-      } = metadataSchema.parse(metadata);
-      return {
-        id: pageId,
-        score,
-        title,
-        url,
-        content,
-      };
+      try {
+        const {
+          pageId,
+          title,
+          url,
+          content,
+        } = metadataSchema.parse(metadata);
+        return {
+          id: pageId,
+          score,
+          title,
+          url,
+          content,
+        };
+      } catch {
+        throw new Error('Failed to parse metadata in getRelevantPages');
+      }
     }),
   };
 }

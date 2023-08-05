@@ -4,7 +4,7 @@ import getContextualResponsePrompt from '../prompts/getContextualResponsePrompt'
 import getRelevantPages from './getRelevantPages';
 import type { StreamEvent } from '../../../../routes/api/response/+server';
 import calculateTokens from '../openai/calculateTokens';
-import paginatePages from './paginatePages';
+import paginatePagesByToken from './paginatePagesByToken';
 
 const answerSchema = z.object({
   answer: z.string(),
@@ -36,7 +36,7 @@ export default async function getContextualResponse(
     8192 - emptyPromptTokenLength - queryTokenLength - tokensReservedForAnswers
   );
 
-  const pageSnippets = paginatePages(pages, tokenSpaceForPages);
+  const pageSnippets = paginatePagesByToken(pages, tokenSpaceForPages);
 
   const prompts = pageSnippets.map((page) => getContextualResponsePrompt(userQuery, page));
 

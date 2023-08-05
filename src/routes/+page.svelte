@@ -17,20 +17,23 @@
       const eventSource = new EventSource(`/api/response?query=${query}`);
 
       eventSource.onmessage = (e) => {
-        const response = JSON.parse(e.data) as StreamEvent;
-        if (response.type === 'status') {
-          status = response.status;
+        const eventData = JSON.parse(e.data) as StreamEvent;
+        if (eventData.type === 'status') {
+          status = eventData.status;
         } else {
-          if (response.response.answers.length !== 0) {
+          if (eventData.response.answers.length !== 0) {
             if (answers === null) {
               answers = [];
             }
 
-            answers.push(...response.response.answers);
+            answers.push(...eventData.response.answers);
           }
 
-          if (response.final) {
-            if (answers === null || answers.length === 0) {
+          if (eventData.final) {
+            if (answers === null) {
+              answers = [];
+              shake();
+            } else if (answers.length === 0) {
               shake();
             }
 

@@ -2,7 +2,7 @@ import type { Vector } from '@pinecone-database/pinecone';
 import getPageContent from '../notion/getPageContent';
 import createEmbedding from '../openai/createEmbedding';
 import getIndex from '../pinecone/getIndex';
-import paginatePages from './paginatePages';
+import paginatePagesByToken from './paginatePagesByToken';
 
 /**
  * Creates a vector from a notion page and upserts it into pinecone
@@ -17,7 +17,7 @@ export default async function indexPage(pageId: string) {
   }
 
   // ada token limit: 2,049
-  const paginatedPages = paginatePages([{
+  const paginatedPages = paginatePagesByToken([{
     id: pageId,
     title,
     url,
@@ -27,7 +27,7 @@ export default async function indexPage(pageId: string) {
   await Promise.all(paginatedPages.map(async (paginatedPage, index) => {
     const embedding = await createEmbedding(paginatedPage);
 
-    const idAppend = paginatedPages.length > 1 ? `(${index + 1}/${paginatePages.length})` : '';
+    const idAppend = paginatedPages.length > 1 ? `(${index + 1}/${paginatedPages.length})` : '';
 
     const vector: Vector = {
       id: pageId + idAppend,
