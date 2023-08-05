@@ -7,7 +7,7 @@ _Navigate your Notion by asking questions and getting contextual responses._
 
 
 ## How It Works
-- Initially, all your [Notion](https://www.notion.so/) pages are embedded using [ADA](https://platform.openai.com/docs/models/embeddings) (an OpenAI model) and stored in a [Pinecone](https://www.pinecone.io/) vector database.
+- Initially, all your [Notion](https://www.notion.so/) pages are embedded using [Ada](https://platform.openai.com/docs/models/embeddings) (an OpenAI model) and stored in a [Pinecone](https://www.pinecone.io/) vector database.
 - Your query is embedded, turned into a vector, and retrieves contextually relevant pages from the database.
 - Finally, [GPT-4](https://platform.openai.com/docs/models/gpt-4) (another OpenAI model) is asked to answer your query using only the retrieved pages as context.
 
