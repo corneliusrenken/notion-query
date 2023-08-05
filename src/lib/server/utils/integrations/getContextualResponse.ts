@@ -40,6 +40,7 @@ export default async function getContextualResponse(
 
   const prompts = pageSnippets.map((page) => getContextualResponsePrompt(userQuery, page));
 
+  // todo: dev only, so that we don't hit the openai api limit
   if (prompts.length > 5) throw new Error('Too many prompts');
 
   const statusAppend = prompts.length > 1 ? `s (1/${prompts.length})` : '';

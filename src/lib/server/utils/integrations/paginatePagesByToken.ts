@@ -1,6 +1,3 @@
-/* eslint-disable array-bracket-spacing */
-/* eslint-disable object-curly-newline */
-/* eslint-disable prefer-const */
 import calculateTokens from '../openai/calculateTokens';
 
 // divides a string into sections of a given length
@@ -15,25 +12,30 @@ export default function paginatePagesByToken(
   availableTokens: number,
 ) {
   // tokens used up by anything but the content
-  const pageOtherTokenLengths = pages
+  const pageDataTokenLengths = pages
+    // eslint-disable-next-line array-bracket-spacing
     .map(({ id, title, url }) => ([ id, title, url ].join(' ')))
     .map((page) => calculateTokens(page, 0.2));
 
   const slices: { text: string, tokens: number }[] = [{ text: '', tokens: 0 }];
 
-  // todo: this technically breaks if the otherTokenLength is too long to ever fit any content
-  pageOtherTokenLengths.forEach((otherTokenLength, i) => {
+  // todo: this technically breaks if the dataTokenLength is too long to ever fit any content
+  if (pageDataTokenLengths.some((dataTokenLength) => dataTokenLength > 0.8 * availableTokens)) {
+    throw new Error('Page data takes up too much space (over 80% of available tokens)');
+  }
+
+  pageDataTokenLengths.forEach((dataTokenLength, i) => {
     const page = pages[i];
     const { id, url, title } = page;
     const content = Array.isArray(page.content) ? page.content.join(' ') : page.content;
 
     let contentStart = 0;
-    let contentEnd = content.length - 1;
+    const contentEnd = content.length - 1;
 
     while (contentStart <= contentEnd) {
       const slice = slices[slices.length - 1];
-      let spaceInSlice = availableTokens - slice.tokens;
-      const spaceForContent = spaceInSlice - otherTokenLength;
+      const spaceInSlice = availableTokens - slice.tokens;
+      const spaceForContent = spaceInSlice - dataTokenLength;
       let contentSlice = content.slice(contentStart, contentEnd + 1);
       let contentSliceTokens = calculateTokens(contentSlice, 0.2);
 
@@ -51,8 +53,13 @@ export default function paginatePagesByToken(
         contentStart += desiredContentSliceLength;
       }
 
-      slice.text += JSON.stringify({ id, url, title, content: contentSlice });
       slice.tokens += contentSliceTokens;
+      slice.text += JSON.stringify({
+        id,
+        url,
+        title,
+        content: contentSlice,
+      });
 
       // if the slice now has less than 20% space left, create a new one
       if ((availableTokens - slice.tokens) / availableTokens < 0.2) {
