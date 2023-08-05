@@ -3,7 +3,7 @@
 _Navigate your Notion by asking questions and getting contextual responses._
 <br /><br /><br />
 
-![demo final full 30fps cropped](https://github.com/corneliusrenken/notion-query/assets/101947579/35fab86b-6ac0-4736-9d91-8bf80155b1f0)
+![notion-query-demo-final](https://github.com/corneliusrenken/notion-query/assets/101947579/8175b482-b1de-4eb0-a732-ccc429e83666)
 
 
 ## How It Works
