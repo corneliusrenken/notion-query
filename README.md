@@ -3,6 +3,9 @@
 _Navigate your Notion by asking questions and getting contextual responses._
 <br /><br /><br />
 
+![demo final full 30fps cropped](https://github.com/corneliusrenken/notion-query/assets/101947579/35fab86b-6ac0-4736-9d91-8bf80155b1f0)
+
+
 ## How It Works
 - Initially, all your [Notion](https://www.notion.so/) pages are embedded using [ADA](https://platform.openai.com/docs/models/embeddings) (an OpenAI model) and stored in a [Pinecone](https://www.pinecone.io/) vector database.
 - Your query is embedded, turned into a vector, and retrieves contextually relevant pages from the database.
