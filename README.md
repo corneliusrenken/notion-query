@@ -31,5 +31,5 @@ _**Disclaimer:** The app does not yet support a 100% user-friendly UI and requir
 5. In `routes/api/response/+server.ts`, uncomment the line of code containing `await reindexAllPages(emit, true);`.
     - This step will make the application create an index in your Pinecone database and store all your pages when running a query. **For future queries, make sure that you comment out the line again** or only run the function with false as the second argument to only re-index your pages.
 6. Use `npm install` to install all dependencies.
-7. Start the application using `npm run dev`.
+7. Start and open the application using `npm run dev -- --open`.
 8. You should now be able to query away! Let me know if you run into any issues.
