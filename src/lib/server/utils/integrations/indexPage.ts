@@ -2,6 +2,7 @@ import type { Vector } from '@pinecone-database/pinecone';
 import getPageContent from '../notion/getPageContent';
 import createEmbedding from '../openai/createEmbedding';
 import getIndex from '../pinecone/getIndex';
+import paginatePagesByToken from './paginatePagesByToken';
 
 /**
  * Creates a vector from a notion page and upserts it into pinecone
@@ -11,33 +12,39 @@ export default async function indexPage(pageId: string) {
   const { title, url, content } = await getPageContent(pageId);
 
   if (content.length === 0) {
-    console.log(`No content - Skipping indexing of page ${pageId}`);
+    // console.log(`No content - Skipping indexing of page ${pageId}`);
     return;
   }
 
-  // todo: need to take OPEN AI TOKEN LIMIT into account here!!!!
-  //       if you want to use blocks in the vector instead of a batched page
-  //       getPageContent has to include block ids for each content line
-  const batchedPage = [`Title: ${title}.`, 'Content:', ...content].join(' ');
-
-  console.log('batchedPage:\n', batchedPage, '\n');
-
-  const embedding = await createEmbedding(batchedPage);
-
-  const vector: Vector = {
+  // ada token limit: 2,049
+  const paginatedPages = paginatePagesByToken([{
     id: pageId,
-    values: embedding,
-    metadata: {
-      title,
-      content,
-      url,
-      // todo: add last changed here to update indices?
-    },
-  };
+    title,
+    url,
+    content,
+  }], 2049);
 
-  await pineconeIndex.upsert({
-    upsertRequest: {
-      vectors: [vector],
-    },
-  });
+  await Promise.all(paginatedPages.map(async (paginatedPage, index) => {
+    const embedding = await createEmbedding(paginatedPage);
+
+    const idAppend = paginatedPages.length > 1 ? `(${index + 1}/${paginatedPages.length})` : '';
+
+    const vector: Vector = {
+      id: pageId + idAppend,
+      values: embedding,
+      metadata: {
+        pageId,
+        title,
+        content: paginatedPage,
+        url,
+        // todo: add last changed here to update indices?
+      },
+    };
+
+    await pineconeIndex.upsert({
+      upsertRequest: {
+        vectors: [vector],
+      },
+    });
+  }));
 }

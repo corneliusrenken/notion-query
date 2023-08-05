@@ -6,9 +6,10 @@ import getQueryEnhancementPrompt from '../prompts/getQueryEnhancementPrompt';
 import type { StreamEvent } from '../../../../routes/api/response/+server';
 
 const metadataSchema = z.object({
+  pageId: z.string(),
   title: z.string(),
   url: z.string(),
-  content: z.array(z.string()),
+  content: z.string(),
 });
 
 export default async function getRelevantPages(
@@ -25,7 +26,7 @@ export default async function getRelevantPages(
   emit?.({ type: 'status', status: 'Creating Vector' });
   const embedding = await createEmbedding(modifiedQuery);
 
-  emit?.({ type: 'status', status: 'Fetching Pelevant Pages' });
+  emit?.({ type: 'status', status: 'Fetching Relevant Pages' });
   const response = await index.query({
     queryRequest: {
       vector: embedding,
@@ -41,15 +42,24 @@ export default async function getRelevantPages(
     userQuery: query,
     vectorQuery: modifiedQuery,
     pages: response.matches.map((match) => {
-      const { id, metadata, score } = match;
-      const { title, url, content } = metadataSchema.parse(metadata);
-      return {
-        id,
-        score,
-        title,
-        url,
-        content,
-      };
+      const { metadata, score } = match;
+      try {
+        const {
+          pageId,
+          title,
+          url,
+          content,
+        } = metadataSchema.parse(metadata);
+        return {
+          id: pageId,
+          score,
+          title,
+          url,
+          content,
+        };
+      } catch {
+        throw new Error('Failed to parse metadata in getRelevantPages');
+      }
     }),
   };
 }
