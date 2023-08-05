@@ -13,8 +13,8 @@ _Navigate your Notion by asking questions and getting contextual responses._
 
 ## Planned Features
 - Support more Notion block types.
-    - Currently, only the basic text-based blocks are supported. Notion-embedded databases and tables are not yet supported, for example.
-- User interface, displaying out-of-sync pages and the ability to re-sync them.
+    - Currently, only the basic text-based blocks are supported. Notion-embedded databases and tables are not, for example.
+- User interface displaying out-of-sync pages and the ability to re-sync them.
 - Allow to load another set of relevant pages, not considering previously used ones, to try and find more responses.
 
 ## How To Use
